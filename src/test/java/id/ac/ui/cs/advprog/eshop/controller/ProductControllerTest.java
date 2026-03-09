@@ -76,7 +76,7 @@ class ProductControllerTest {
     void testEditProductPost() {
         Product product = new Product();
         product.setProductId("1");
-        String view = productController.editProductPost("1", product, model);
+        String view = productController.editProductPost(product, model);
         verify(productService, times(1)).edit("1", product);
         assertEquals("redirect:/product/list", view);
     }
@@ -90,7 +90,7 @@ class ProductControllerTest {
 
     @Test
     void testDeleteProductPage() {
-        String view = productController.deleteProductPage("1", model);
+        String view = productController.deleteProduct("1");
         verify(productService, times(1)).delete("1");
         assertEquals("redirect:/product/list", view);
     }
@@ -103,7 +103,7 @@ class ProductControllerTest {
 
         when(productService.edit(anyString(), any(Product.class))).thenReturn(null);
 
-        String view = productController.editProductPost(productId, product, model);
+        String view = productController.editProductPost(product, model);
 
         assertEquals("redirect:/product/list", view);
     }

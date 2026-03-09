@@ -84,10 +84,4 @@ tasks.jacocoTestReport{
     dependsOn(tasks.test)
 }
 
-sonar {
-    properties {
-        property("sonar.projectKey", "B-Anya-Aleena-Wardhany-2406401773_Modul-2-CI-CD-DevOps")
-        property("sonar.organization", "b-anya-aleena-wardhany-2406401773")
-        property("sonar.host.url", "https://sonarcloud.io")
-    }
-}
+

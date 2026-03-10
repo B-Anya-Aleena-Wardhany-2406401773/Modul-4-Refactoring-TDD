@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.eshop.service;
 
+import id.ac.ui.cs.advprog.eshop.model.Order;
 import id.ac.ui.cs.advprog.eshop.model.Payment;
 import id.ac.ui.cs.advprog.eshop.repository.PaymentRepository;
 import id.ac.ui.cs.advprog.eshop.service.validator.CashOnDeliveryValidator;
@@ -31,12 +32,13 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public Payment createPayment(Payment payment) {
-        if (paymentRepository.findById(payment.getId()) == null) {
+    public Payment createPayment(Order order, String method, Map<String, String> paymentData) {
+        if (paymentRepository.findById(order.getId()) == null) {
+            Payment payment = new Payment(order.getId(), method, paymentData);
             PaymentValidator validator = validators.get(payment.getMethod());
             validator.validate(payment);
-
-            return paymentRepository.save(payment);
+            paymentRepository.save(payment);
+            return payment;
         }
         return null;
     }

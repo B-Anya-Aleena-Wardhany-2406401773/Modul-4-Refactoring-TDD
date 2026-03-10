@@ -11,9 +11,14 @@ import java.util.Map;
 public class VoucherValidator implements PaymentValidator {
     @Override
     public void validate(Payment payment) {
+        Map<String, String> paymentData = payment.getPaymentData();
+        String code = paymentData.get("voucherCode");
+        if (code == null || code.length() != 16 || !code.startsWith("ESHOP")) {
+            payment.setStatus(PaymentStatus.REJECTED.getValue());
+        }
     }
     @Override
     public String getMethodName() {
-        return null;
+        return PaymentMethod.VOUCHER.getValue();
     }
 }

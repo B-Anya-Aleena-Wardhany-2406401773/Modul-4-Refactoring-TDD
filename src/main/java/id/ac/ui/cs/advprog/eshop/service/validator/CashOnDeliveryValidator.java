@@ -11,9 +11,13 @@ import java.util.Map;
 public class CashOnDeliveryValidator implements PaymentValidator {
     @Override
     public void validate(Payment payment) {
+        Map<String, String> paymentData = payment.getPaymentData();
+        if (paymentData.get("address") == null || paymentData.get("deliveryFee") == null) {
+            payment.setStatus(PaymentStatus.REJECTED.getValue());
+        }
     }
     @Override
     public String getMethodName() {
-        return null;
+        return PaymentMethod.CASH_ON_DELIVERY.getValue();
     }
 }

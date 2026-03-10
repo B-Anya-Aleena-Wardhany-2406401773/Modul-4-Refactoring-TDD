@@ -1,20 +1,26 @@
 package id.ac.ui.cs.advprog.eshop.service;
 
+import id.ac.ui.cs.advprog.eshop.enums.PaymentMethod;
 import id.ac.ui.cs.advprog.eshop.enums.PaymentStatus;
 import id.ac.ui.cs.advprog.eshop.model.Payment;
 import id.ac.ui.cs.advprog.eshop.repository.PaymentRepository;
+import id.ac.ui.cs.advprog.eshop.service.validator.CashOnDeliveryValidator;
+import id.ac.ui.cs.advprog.eshop.service.validator.PaymentValidator;
+import id.ac.ui.cs.advprog.eshop.service.validator.VoucherValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,7 +28,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
-    @InjectMocks
     PaymentServiceImpl paymentService;
 
     @Mock
@@ -32,10 +37,16 @@ class PaymentServiceTest {
 
     @BeforeEach
     void setUp() {
-        payments = new ArrayList<>();
+
+        List<PaymentValidator> list = List.of(new VoucherValidator(), new CashOnDeliveryValidator());
+        paymentService = new PaymentServiceImpl(list);
+
+        ReflectionTestUtils.setField(paymentService, "paymentRepository", paymentRepository);
 
         Map<String, String> paymentData = new HashMap<>();
         paymentData.put("voucherCode", "ESHOP1234ABC5678");
+
+        payments = new ArrayList<>();
 
         Payment payment1 = new Payment("13652556-012a-4c07-b546-54eb1396d79b",
                 "VOUCHER", paymentData);
@@ -124,5 +135,28 @@ class PaymentServiceTest {
         List<Payment> results = paymentService.findAllPayments();
         assertEquals(2, results.size());
         verify(paymentRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testCreatePaymentVoucherInvalidCode() {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put("voucherCode", "ABC12345");
+        Payment invalidCodePayment = new Payment("7f9e15bb-4b15-42f4-aebc-c3af385fb078",
+                PaymentMethod.VOUCHER.getValue(), paymentData);
+        paymentService.createPayment(invalidCodePayment);
+
+        assertEquals(invalidCodePayment.getStatus(), PaymentStatus.REJECTED.getValue());
+    }
+
+    @Test
+    void testCreatePaymentCODNullAddress() {
+        Map<String, String> paymentData = new HashMap<>();
+        paymentData.put("address", null);
+        Payment nullAddressPayment = new Payment("7f9e15bb-4b15-42f4-aebc-c3af385fb078",
+                PaymentMethod.CASH_ON_DELIVERY.getValue(), paymentData);
+
+        paymentService.createPayment(nullAddressPayment);
+
+        assertEquals(nullAddressPayment.getStatus(), PaymentStatus.REJECTED.getValue());
     }
 }
